@@ -1,0 +1,145 @@
+/*bootstrap*/
+
+.navbar {
+    margin-bottom: 0;
+    border-radius: 0;
+}
+
+.navbar-brand {
+    padding: 0;
+    height: 60px;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand > img {
+    margin-right: 10px;
+}
+
+.navbar-inverse .navbar-brand {
+    color: white;
+}
+.well {
+    border-radius: 0;
+}
+
+.btn {
+    padding: 4px 8px;
+}
+
+label {
+    color: rgb(157, 157, 157);
+}
+
+select.input-sm, .input-sm {
+    padding: 1px 6px;
+    line-height: 1;
+    height: 30px;
+}
+
+/*toolbar*/
+
+.toolbar {
+    display: flex;
+    justify-content: center;
+}
+
+.toolbar > .btn-group {
+    align-self: flex-end;
+    margin-bottom: 4px;
+    margin-right: 10px;
+}
+
+.toolbar-item {
+    margin-right: 10px;
+}
+
+.toolbar-item .piece img {
+    width: 30px
+}
+
+.toolbar-item-100 {
+    margin-right: 10px;
+    min-width: 100px;
+}
+
+.toolbar > .right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 0;
+}
+
+.value {
+    font-size: 18px;
+    height: 30px;
+    border-bottom: 1px solid gray;
+    text-align: end;
+}
+
+.chart {
+    min-width: 200px;
+    height: 60px;
+    border: 1px solid gray;
+    margin-right: 10px;
+}
+
+#moves-chart {
+    display: flex;
+    align-items: flex-end;
+}
+
+#moves-chart div {
+    background-color: steelblue;
+    margin: 1px;
+    flex: 1;
+}
+
+#moves-chart div.selected {
+    background-color: red;
+}
+
+/*board*/
+
+
+.board-parent {
+    display: flex;
+    justify-content: center;
+}
+
+#board {
+    position: relative;
+    background-color: black;
+}
+
+.board-row {
+    height: 50px;
+}
+
+.cell {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+}
+
+.cell.selected {
+    opacity: 0.5;
+}
+
+.cell.white {
+    background-color: #FFCE9E;
+}
+
+.cell.black {
+    background-color: #D18B47;
+}
+
+.piece {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    padding: 2px;
+}
+
+
