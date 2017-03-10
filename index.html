@@ -22,10 +22,11 @@
 <div class="well well-sm">
     <div class="toolbar">
         <div class="btn-group toolbar-item">
-            <button id="restart" class="btn btn-danger" title="Restart game"><i class="fa fa-repeat"></i></button>
+            <button id="restart" class="btn btn-danger" title="Restart game"><i class="fa fa-power-off"></i></button>
             <button id="save" class="btn btn-default" title="Save game"><i class="fa fa-save"></i></button>
             <button id="load" class="btn btn-default" title="Load game"><i class="fa fa-folder-open"></i></button>
             <button id="settings" class="btn btn-default" title="AI settings"><i class="fa fa-cog"></i></button>
+            <button id="undo" class="btn btn-default" title="Undo move"><i class="fa fa-undo"></i></button>
             <button id="analyze" class="btn btn-default" title="Analyze board"><i class="fa fa-play"></i></button>
         </div>
         <div class="toolbar-item-100">
@@ -37,9 +38,11 @@
         </div>
         <div class="toolbar-item">
             <label>Player</label>
-            <div id="player" class="piece">
-                <img/>
-            </div>
+            <img id="player"/>
+        </div>
+        <div class="toolbar-item">
+            <label>Status</label>
+            <div class="value" id="status">Check!</div>
         </div>
         <div class="toolbar-item-100">
             <label>Iterations</label>

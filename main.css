@@ -55,8 +55,9 @@ select.input-sm, .input-sm {
     margin-right: 10px;
 }
 
-.toolbar-item .piece img {
-    width: 30px
+.toolbar-item #player {
+    width: 30px;
+    display: block;
 }
 
 .toolbar-item-100 {

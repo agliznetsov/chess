@@ -5,7 +5,7 @@ import * as $ from 'jquery';
 import MessageBus from './MessageBus';
 import BarChart from './BarChart';
 import LineChart from './LineChart';
-import {Board, Cell, Piece, Move, PieceType} from './Chess';
+import {Board, Cell, Piece, Move, PieceType, GameStatus} from './Chess';
 import BoardView from './BoardView';
 // import {AI, MTS_AI, MiniMaxAI} from './AI';
 
@@ -31,6 +31,7 @@ class App {
 
     init() {
         $('#restart').click(this.restart.bind(this));
+        $('#undo').click(this.undo.bind(this));
         // $('#analyze').click(this.analyze.bind(this));
         // $('#save').click(this.save.bind(this));
         // $('#load').click(this.load.bind(this));
@@ -48,28 +49,37 @@ class App {
     }
 
     onBoardClick(e) {
-        this.board.clearSelection();
-        let cell = this.getClickedCell(e);
-        if (this.selectedPiece) {
-            if (this.selectedPiece.isValidMove(cell)) {
-                this.board.makeMove(new Move(this.selectedPiece.cell, cell));
+        if (!this.board.status) {
+            this.board.clearSelection();
+            let cell = this.getClickedCell(e);
+            if (this.selectedPiece) {
+                if (this.selectedPiece.isValidMove(cell)) {
+                    this.board.makeMove(new Move(this.selectedPiece.cell, cell));
+                } else {
+                    this.selectPiece(cell);
+                }
+            } else {
+                this.selectPiece(cell);
             }
-            this.selectedPiece = null;
-        } else {
-            let piece = this.board.getCell(cell);
-            if (piece && piece.player == this.board.player) {
-                this.selectedPiece = piece;
-                this.board.setSelection(piece.cell, true);
-                piece.moves.forEach(c => this.board.setSelection(c, true));
-            }
+            this.refresh();
         }
-        this.refresh();
         // if (!this.board.win && !this.board.get(cell.x, cell.y) && !this.timer) {
         //     this.makeMove(cell.x, cell.y);
         //     if (!this.board.win) {
         //         this.analyze();
         //     }
         // }
+    }
+
+    private selectPiece(cell: Cell) {
+        let piece = this.board.getCell(cell);
+        if (piece && piece.player == this.board.player) {
+            this.selectedPiece = piece;
+            this.board.setSelection(piece.cell, true);
+            piece.moves.forEach(c => this.board.setSelection(c, true));
+        } else {
+            this.selectedPiece = null;
+        }
     }
 
     getClickedCell(e): Cell {
@@ -155,7 +165,16 @@ class App {
 
     refresh() {
         this.boardView.refresh();
-        d3.select("#player > img").attr("src", "img/piece/" + PieceType.King + "" + this.board.player + ".svg");
+        d3.select("#player").attr("src", "img/piece/" + PieceType.King + "" + this.board.player + ".svg");
+        let status = "";
+        if (this.board.status == GameStatus.Checkmate) {
+            status = "Checkmate!";
+        } else if (this.board.status == GameStatus.Stalemate) {
+            status = "Stalemate!";
+        } else if (this.board.getKing(this.board.player).checked) {
+            status = "Check!";
+        }
+        d3.select("#status").text(status);
     }
 
     restart() {
@@ -165,6 +184,11 @@ class App {
         this.refresh();
     }
 
+    undo() {
+        this.stopTimer();
+        this.board.undo();
+        this.refresh();
+    }
 
 }
 

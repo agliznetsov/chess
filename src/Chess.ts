@@ -52,6 +52,10 @@ export const enum Player {
     White = 1, Black = 2
 }
 
+export const enum GameStatus {
+    Checkmate = 1, Stalemate = 2
+}
+
 export abstract class Piece {
     private static counter = 0;
 
@@ -68,6 +72,8 @@ export abstract class Piece {
         this.player = player;
         this.cell = cell;
     }
+
+    public abstract clone(): Piece;
 
     findMoves() {
         this.moves = [];
@@ -88,11 +94,9 @@ export abstract class Piece {
                 this.moves.push(new Cell(x, y));
             } else {
                 if (p.player != this.player) {
-                    this.moves.push(new Cell(x, y));
-                    break;
-                } else {
-                    break;
+                    this.doAddMove(x, y, p);
                 }
+                break;
             }
         }
     }
@@ -101,8 +105,15 @@ export abstract class Piece {
         if (Cell.OK(x, y)) {
             let p = this.board.get(x, y);
             if ((!p && move) || (p && p.player != this.player && capture)) {
-                this.moves.push(new Cell(x, y));
+                this.doAddMove(x, y, p);
             }
+        }
+    }
+
+    private doAddMove(x: number, y: number, p: Piece) {
+        this.moves.push(new Cell(x, y));
+        if (p && p.type == PieceType.King) {
+            (p as King).checked = true;
         }
     }
 
@@ -128,9 +139,13 @@ export abstract class Piece {
     }
 }
 
-class Pawn extends Piece {
+export class Pawn extends Piece {
     constructor(player: Player, cell: Cell) {
         super(PieceType.Pawn, player, cell);
+    }
+
+    public clone(): Pawn {
+        return new Pawn(this.player, this.cell);
     }
 
     protected addMoves(x: number, y: number) {
@@ -152,9 +167,13 @@ class Pawn extends Piece {
     }
 }
 
-class Knight extends Piece {
+export class Knight extends Piece {
     constructor(player: Player, cell: Cell) {
         super(PieceType.Knight, player, cell);
+    }
+
+    public clone(): Knight {
+        return new Knight(this.player, this.cell);
     }
 
     protected addMoves(x: number, y: number) {
@@ -169,11 +188,15 @@ class Knight extends Piece {
     }
 }
 
-class Bishop extends Piece {
+export class Bishop extends Piece {
     constructor(player: Player, cell: Cell) {
         super(PieceType.Bishop, player, cell);
     }
 
+    public clone(): Bishop {
+        return new Bishop(this.player, this.cell);
+    }
+
     protected addMoves(x: number, y: number) {
         this.addLine(x, y, -1, -1);
         this.addLine(x, y, -1, 1);
@@ -182,11 +205,15 @@ class Bishop extends Piece {
     }
 }
 
-class Rook extends Piece {
+export class Rook extends Piece {
     constructor(player: Player, cell: Cell) {
         super(PieceType.Rook, player, cell);
     }
 
+    public clone(): Rook {
+        return new Rook(this.player, this.cell);
+    }
+
     protected addMoves(x: number, y: number) {
         this.addLine(x, y, -1, 0);
         this.addLine(x, y, 1, 0);
@@ -195,9 +222,13 @@ class Rook extends Piece {
     }
 }
 
-class Queen extends Piece {
+export class Queen extends Piece {
     constructor(player: Player, cell: Cell) {
         super(PieceType.Queen, player, cell);
+    }
+
+    public clone(): Queen {
+        return new Queen(this.player, this.cell);
     }
 
     protected addMoves(x: number, y: number) {
@@ -212,25 +243,33 @@ class Queen extends Piece {
     }
 }
 
-class King extends Piece {
+export class King extends Piece {
+    checked: boolean;
+
     constructor(player: Player, cell: Cell) {
         super(PieceType.King, player, cell);
+    }
+
+    public clone(): King {
+        let p = new King(this.player, this.cell);
+        p.checked = this.checked;
+        return p;
     }
 
     protected addMoves(x: number, y: number) {
         let king = this.board.getKing(Board.nextPlayer(this.player));
         let forbidden = {};
 
-        for(let dy = -1; dy <= 1; dy++) {
-            for(let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
                 if (dx !== 0 || dy !== 0) {
                     forbidden[Cell.ID(king.cell.x + dx, king.cell.y + dy)] = true;
                 }
             }
         }
 
-        for(let dy = -1; dy <= 1; dy++) {
-            for(let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
                 if (dx !== 0 || dy !== 0) {
                     if (!forbidden[Cell.ID(x + dx, y + dy)]) {
                         this.addMove(x + dx, y + dy);
@@ -244,21 +283,13 @@ class King extends Piece {
 export class Board {
     static readonly SIZE: number = 8;
 
-    private cells: Piece[];
-    private kings: Piece[] = new Array(2);
-    private pieces: Piece[];
-    private selection: any[];
-    private history: Move[] = [];
-    player: Player;
-
-
-    constructor() {
-        this.init();
-    }
-
-    getPieces(): Piece[] {
-        return this.pieces;
-    }
+    private cells: Piece[] = new Array(Board.SIZE * Board.SIZE);
+    private kings: King[] = new Array(2);
+    private pieces: Piece[] = [];
+    private selection: any[] = new Array(Board.SIZE * Board.SIZE);
+    private history: any[] = [];
+    player: Player = Player.White;
+    status: GameStatus;
 
     init() {
         this.cells = new Array(Board.SIZE * Board.SIZE);
@@ -282,12 +313,27 @@ export class Board {
         }
     }
 
+    public clone(): Board {
+        let clone = new Board();
+        clone.player = this.player;
+        clone.cells = new Array(Board.SIZE * Board.SIZE);
+        clone.pieces = [];
+        this.pieces.forEach(p => {
+            clone.add(p.clone());
+        });
+        return clone;
+    }
+
+    public getPieces(): Piece[] {
+        return this.pieces;
+    }
+
     public add(piece: Piece) {
         piece.board = this;
         this.cells[piece.cell.id()] = piece;
         this.pieces.push(piece);
         if (piece.type == PieceType.King) {
-            this.kings[piece.player - 1] = piece;
+            this.kings[piece.player - 1] = piece as King;
         }
     }
 
@@ -305,13 +351,104 @@ export class Board {
         return this.cells[Cell.ID(x, y)];
     }
 
-    public getKing(player: Player): Piece {
+    public getKing(player: Player): King {
         return this.kings[player - 1];
     }
 
+    public makeMove(move: Move) {
+        this.doMove(move);
+        this.player = Board.nextPlayer(this.player);
+        this.analyze();
+    }
+
+    private doMove(move: Move) {
+        let source = this.getCell(move.from);
+        let target = this.getCell(move.to);
+        if (target) {
+            this.remove(target);
+        }
+        source.cell = move.to;
+        this.cells[move.from.id()] = null;
+        this.cells[move.to.id()] = source;
+        let historyItem: any = {
+            move: move,
+            source: source,
+            target: target
+        };
+        if (source.type == PieceType.Pawn && ((source.player == Player.White && move.to.y === 0) || (source.player == Player.Black && move.to.y === 7))) {
+            historyItem.promote = true;
+            this.remove(source);
+            historyItem.source = new Queen(source.player, source.cell);
+            this.add(historyItem.source);
+        }
+        this.history.push(historyItem);
+    }
+
+    public undo() {
+        if (this.history.length) {
+            this.undoMove();
+            this.player = Board.nextPlayer(this.player);
+            this.analyze();
+        }
+    }
+
+    private undoMove() {
+        let move = this.history.pop();
+        if (move.target) {
+            this.add(move.target);
+        } else {
+            this.cells[move.move.to.id()] = null;
+        }
+        move.source.cell = move.move.from;
+        this.cells[move.move.from.id()] = move.source;
+        if (move.promote) {
+            this.remove(move.source);
+            this.add(new Pawn(move.source.player, move.move.from));
+        }
+    }
+
     public analyze() {
-        //TODO: check, chekmate, castling, promotion
-        this.pieces.forEach(p => p.findMoves());
+        this.status = null;
+        this.findMoves();
+        this.status = this.checkMoves();
+    }
+
+    private checkMoves(): GameStatus {
+        //1. try all moves
+        let moveCount = 0;
+        this.pieces.forEach(piece => {
+            if (piece.player == this.player) {
+                let validMoves = [];
+                piece.moves.forEach(move => {
+                    let copy = this.clone();
+                    copy.doMove(new Move(piece.cell, move));
+                    //2. find opponent moves
+                    copy.findMoves();
+                    //3. exclude checked moves
+                    if (!copy.getKing(this.player).checked) {
+                        validMoves.push(move);
+                    }
+                });
+                piece.moves = validMoves;
+                moveCount += validMoves.length;
+            }
+        });
+        //4. if no moves or no pieces -> end game
+        if (moveCount === 0) {
+            return this.getKing(this.player).checked ? GameStatus.Checkmate : GameStatus.Stalemate;
+        } else {
+            return (this.pieces.length == 2) ? GameStatus.Stalemate : null;
+        }
+    }
+
+    private findMoves() {
+        //TODO: castling
+        let count = 0;
+        this.kings.forEach(k => k.checked = false);
+        this.pieces.forEach(p => {
+            p.findMoves();
+            count += p.moves.length;
+        });
     }
 
     public clearSelection() {
@@ -326,20 +463,6 @@ export class Board {
 
     public getSelection(cell: Cell) {
         return this.selection[cell.id()];
-    }
-
-    public makeMove(move: Move) {
-        let source = this.getCell(move.from);
-        let target = this.getCell(move.to);
-        if (target) {
-            this.remove(target);
-        }
-        source.cell = move.to;
-        this.cells[move.from.id()] = null;
-        this.cells[move.to.id()] = source;
-        this.analyze();
-        this.history.push(move);
-        this.player = Board.nextPlayer(this.player);
     }
 
     public static nextPlayer(player: Player) {

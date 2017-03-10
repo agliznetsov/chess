@@ -32,6 +32,6 @@
     "build": "rm -rf dist && tsc -p . && webpack --bail --colors --progress",
     "start": "tsc -p . && webpack-dev-server --bail --colors --progress --port 8000",
     "dist": "http-server -p 8000 -c-1 -o",
-    "test": "tsc -p . && mocha --colors test/**/*Test.js"
+    "test": "mocha --colors --require ts-node/register test/**/*Test.ts"
   }
 }
