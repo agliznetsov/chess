@@ -13,6 +13,8 @@ import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "../node_modules/bootstrap/dist/js/bootstrap.js";
 import "../node_modules/font-awesome/css/font-awesome.min.css";
 import "../main.css";
+import {MonteCarloTreeSearch} from "./MonteCarloTreeSearch";
+import {MiniMaxAI} from "./MiniMax";
 
 class App {
     private barChart;
@@ -23,7 +25,7 @@ class App {
     private timer;
     private iteration: number;
     private confidences;
-    // private ai: AI;
+    private ai: MonteCarloTreeSearch;
     private aiSettings;
     private stop;
     private start;
@@ -32,11 +34,10 @@ class App {
     init() {
         $('#restart').click(this.restart.bind(this));
         $('#undo').click(this.undo.bind(this));
-        // $('#analyze').click(this.analyze.bind(this));
+        $('#analyze').click(this.analyze.bind(this));
         // $('#save').click(this.save.bind(this));
         // $('#load').click(this.load.bind(this));
         // $('#settings').click(this.configure.bind(this));
-        // $('#game').change(this.restart.bind(this));
 
         $('#board').click(this.onBoardClick.bind(this));
 
@@ -89,74 +90,73 @@ class App {
         return new Cell(x, y);
     }
 
-    // makeMove(x: number, y: number) {
-    //     let cell = this.board.makeMove(x, y, this.player);
-    //     this.board.findWinner(cell.x, cell.y);
-    //     if (!this.board.win) {
-    //         this.player = Board.nextPlayer(this.player);
-    //     }
-    //     this.refresh();
-    // }
+    makeMove(move: Move) {
+        this.board.makeMove(move);
+        this.refresh();
+    }
 
-    // analyze() {
-    //     if (!this.timer) {
-    //         this.lineChart.reset();
-    //         this.iteration = 0;
-    //
-    //         this.ai = new MTS_AI(this.board, this.player);
-    //         this.stop = false;
-    //         // this.ai = new MiniMaxAI(this.board, this.player);
-    //         // this.stop = true;
-    //
-    //         this.start = new Date().getTime();
-    //         this.confidences = [];
-    //         this.timer = d3.timer(this.onTimer.bind(this));
-    //         $('#analyze > i').attr('class', 'fa fa-stop');
-    //     } else {
-    //         this.stop = true;
-    //     }
-    // }
+    analyze() {
+        if (!this.timer) {
+            this.confidences = [];
+            this.lineChart.reset();
+            this.iteration = 0;
 
-    // onTimer(elapsed) {
-    //     try {
-    //         let frameStart = new Date().getTime();
-    //         while (new Date().getTime() - frameStart < 50) { //20 fps
-    //             this.ai.step();
-    //             this.iteration++;
-    //         }
-    //         this.aiResult = this.ai.getResult();
-    //         let time = (new Date().getTime() - this.start) / 1000;
-    //         this.barChart.refresh(this.aiResult);
-    //         this.boardView.refresh({move: this.aiResult.moves[0].move, player: this.ai.player});
-    //         this.lineChart.addDataPoint(this.aiResult.confidence);
-    //
-    //         $('#iterations').text(this.iteration);
-    //         $('#confidence').text(this.format(this.aiResult.confidence, 2));
-    //         $('#time').text(this.format(time, 2));
-    //
-    //         let settings = this.getSettings();
-    //         if (this.stop
-    //             || (this.aiResult.moves.length === 1)
-    //             || (settings.timeout > 0 && elapsed >= settings.timeout * 1000)
-    //             || (settings.confidence > 0 && this.aiResult.confidence >= settings.confidence)
-    //             || (settings.iterations > 0 && this.iteration >= settings.iterations)) {
-    //             // console.log('it/sec', this.iteration / time);
-    //             let cell = this.board.cell(this.aiResult.moves[0].move);
-    //             this.makeMove(cell.x, cell.y);
-    //             this.stopTimer();
-    //         }
-    //     } catch (e) {
-    //         console.error(e);
-    //         this.stopTimer();
-    //     }
-    // }
+            // this.ai = new MonteCarloTreeSearch(this.board);
+            // this.stop = false;
+            this.start = new Date().getTime();
+            let ai = new MiniMaxAI(this.board, 3);
+            let move = ai.findMove();
+            let time = (new Date().getTime() - this.start) / 1000;
+            $('#time').text(this.format(time, 2));
+            this.makeMove(move.move);
+
+            // this.timer = d3.timer(this.onTimer.bind(this));
+            // $('#analyze > i').attr('class', 'fa fa-stop');
+        } else {
+            this.stop = true;
+        }
+    }
+
+    onTimer(elapsed) {
+        try {
+            let frameStart = new Date().getTime();
+            while (new Date().getTime() - frameStart < 50) { //20 fps
+                this.ai.step();
+                this.iteration++;
+            }
+            this.aiResult = this.ai.getResult();
+            let time = (new Date().getTime() - this.start) / 1000;
+            this.barChart.refresh(this.aiResult);
+            this.boardView.refresh();
+            this.lineChart.addDataPoint(this.aiResult.confidence);
+
+            $('#iterations').text(this.iteration);
+            $('#confidence').text(this.format(this.aiResult.confidence, 2));
+            $('#time').text(this.format(time, 2));
+
+            let settings = {iterations: 100};
+            if (this.stop
+                || (this.aiResult.moves.length === 1)
+                // || (settings.timeout > 0 && elapsed >= settings.timeout * 1000)
+                // || (settings.confidence > 0 && this.aiResult.confidence >= settings.confidence)
+                || (settings.iterations > 0 && this.iteration >= settings.iterations)) {
+                // console.log('it/sec', this.iteration / time);
+                let move = this.aiResult.moves[0].move as Move;
+                this.makeMove(move);
+                this.stopTimer();
+            }
+        } catch (e) {
+            console.error(e);
+            this.stopTimer();
+        }
+    }
 
     stopTimer() {
-        // if (this.timer) {
-        //     this.timer.stop();
-        //     this.timer = undefined;
-        //     $('#analyze > i').attr('class', 'fa fa-play');
-        // }
+        if (this.timer) {
+            this.timer.stop();
+            this.timer = undefined;
+            $('#analyze > i').attr('class', 'fa fa-play');
+        }
     }
 
     format(value: number, digits: number) {
