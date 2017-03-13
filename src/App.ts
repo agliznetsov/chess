@@ -62,12 +62,6 @@ class App {
             }
             this.refresh();
         }
-        // if (!this.board.win && !this.board.get(cell.x, cell.y) && !this.timer) {
-        //     this.makeMove(cell.x, cell.y);
-        //     if (!this.board.win) {
-        //         this.analyze();
-        //     }
-        // }
     }
 
     private selectPiece(cell: Cell) {
@@ -95,66 +89,58 @@ class App {
 
     analyze() {
         // if (!this.timer) {
-            // this.confidences = [];
-            // this.lineChart.reset();
-            // this.iteration = 0;
+        //     $('#analyze').prop("disabled", true);
+        //     this.timer = d3.timer(this.onTimer.bind(this));
+        // }
+        this.start = new Date().getTime();
+        let ai = new MiniMaxAI(this.board);
+        let move = ai.findMove();
+        let time = (new Date().getTime() - this.start) / 1000;
+        $('#time').text(this.format(time, 2));
+        $('#iterations').text(move.iterations);
+        this.makeMove(move.move);
+    }
 
-            this.start = new Date().getTime();
-            let ai = new MiniMaxAI(this.board);
-            let move = ai.findMove();
-            let time = (new Date().getTime() - this.start) / 1000;
-            $('#time').text(this.format(time, 2));
-            $('#iterations').text(move.iterations);
-            this.makeMove(move.move);
-
-            // this.timer = d3.timer(this.onTimer.bind(this));
-            // $('#analyze > i').attr('class', 'fa fa-stop');
-        // } else {
-        //     this.stop = true;
+    onTimer(elapsed) {
+        // try {
+        //     let frameStart = new Date().getTime();
+        //     while (new Date().getTime() - frameStart < 50) { //20 fps
+        //         this.ai.step();
+        //         this.iteration++;
+        //     }
+        //     this.aiResult = this.ai.getResult();
+        //     let time = (new Date().getTime() - this.start) / 1000;
+        //     this.barChart.refresh(this.aiResult);
+        //     this.boardView.refresh();
+        //     this.lineChart.addDataPoint(this.aiResult.confidence);
+        //
+        //     $('#iterations').text(this.iteration);
+        //     $('#confidence').text(this.format(this.aiResult.confidence, 2));
+        //     $('#time').text(this.format(time, 2));
+        //
+        //     let settings = {iterations: 100};
+        //     if (this.stop
+        //         || (this.aiResult.moves.length === 1)
+        //         // || (settings.timeout > 0 && elapsed >= settings.timeout * 1000)
+        //         // || (settings.confidence > 0 && this.aiResult.confidence >= settings.confidence)
+        //         || (settings.iterations > 0 && this.iteration >= settings.iterations)) {
+        //         // console.log('it/sec', this.iteration / time);
+        //         let move = this.aiResult.moves[0].move as Move;
+        //         this.makeMove(move);
+        //         this.stopTimer();
+        //     }
+        // } catch (e) {
+        //     console.error(e);
+        //     this.stopTimer();
         // }
     }
 
-    // onTimer(elapsed) {
-    //     try {
-    //         let frameStart = new Date().getTime();
-    //         while (new Date().getTime() - frameStart < 50) { //20 fps
-    //             this.ai.step();
-    //             this.iteration++;
-    //         }
-    //         this.aiResult = this.ai.getResult();
-    //         let time = (new Date().getTime() - this.start) / 1000;
-    //         this.barChart.refresh(this.aiResult);
-    //         this.boardView.refresh();
-    //         this.lineChart.addDataPoint(this.aiResult.confidence);
-    //
-    //         $('#iterations').text(this.iteration);
-    //         $('#confidence').text(this.format(this.aiResult.confidence, 2));
-    //         $('#time').text(this.format(time, 2));
-    //
-    //         let settings = {iterations: 100};
-    //         if (this.stop
-    //             || (this.aiResult.moves.length === 1)
-    //             // || (settings.timeout > 0 && elapsed >= settings.timeout * 1000)
-    //             // || (settings.confidence > 0 && this.aiResult.confidence >= settings.confidence)
-    //             || (settings.iterations > 0 && this.iteration >= settings.iterations)) {
-    //             // console.log('it/sec', this.iteration / time);
-    //             let move = this.aiResult.moves[0].move as Move;
-    //             this.makeMove(move);
-    //             this.stopTimer();
-    //         }
-    //     } catch (e) {
-    //         console.error(e);
-    //         this.stopTimer();
-    //     }
-    // }
-
-    // stopTimer() {
-    //     if (this.timer) {
-    //         this.timer.stop();
-    //         this.timer = undefined;
-    //         $('#analyze > i').attr('class', 'fa fa-play');
-    //     }
-    // }
+    stopTimer() {
+        if (this.timer) {
+            this.timer.stop();
+            this.timer = undefined;
+        }
+    }
 
     format(value: number, digits: number) {
         return value.toFixed(digits);
@@ -175,14 +161,13 @@ class App {
     }
 
     restart() {
-        // this.stopTimer();
-        // let game = $('#game').val();
+        this.stopTimer();
         this.board.init();
         this.refresh();
     }
 
     undo() {
-        // this.stopTimer();
+        this.stopTimer();
         this.board.undo();
         this.refresh();
     }
