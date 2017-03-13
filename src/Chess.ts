@@ -159,14 +159,14 @@ export class Pawn extends Piece {
     protected addMoves(x: number, y: number) {
         if (this.player == Player.White) {
             this.addMove(x, y - 1, true, false);
-            if (y == 6) {
+            if (y == 6 && !this.board.get(x, 5)) {
                 this.addMove(x, 4, true, false);
             }
             this.addMove(x - 1, y - 1, false, true);
             this.addMove(x + 1, y - 1, false, true);
         } else {
             this.addMove(x, y + 1, true, false);
-            if (y == 1) {
+            if (y == 1 && !this.board.get(x, 2)) {
                 this.addMove(x, 3, true, false);
             }
             this.addMove(x - 1, y + 1, false, true);

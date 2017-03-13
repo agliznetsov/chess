@@ -2,18 +2,15 @@ import * as d3 from 'd3';
 import * as _ from 'lodash';
 import * as $ from 'jquery';
 
-import MessageBus from './MessageBus';
 import BarChart from './BarChart';
 import LineChart from './LineChart';
 import {Board, Cell, Piece, Move, PieceType, GameStatus} from './Chess';
 import BoardView from './BoardView';
-// import {AI, MTS_AI, MiniMaxAI} from './AI';
 
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "../node_modules/bootstrap/dist/js/bootstrap.js";
 import "../node_modules/font-awesome/css/font-awesome.min.css";
 import "../main.css";
-import {MonteCarloTreeSearch} from "./MonteCarloTreeSearch";
 import {MiniMaxAI} from "./MiniMax";
 
 class App {
@@ -25,8 +22,6 @@ class App {
     private timer;
     private iteration: number;
     private confidences;
-    private ai: MonteCarloTreeSearch;
-    private aiSettings;
     private stop;
     private start;
     private aiResult;
@@ -56,6 +51,9 @@ class App {
             if (this.selectedPiece) {
                 if (this.selectedPiece.isValidMove(cell)) {
                     this.board.makeMove(new Move(this.selectedPiece.cell, cell));
+                    if (!this.board.status) {
+                        this.analyze();
+                    }
                 } else {
                     this.selectPiece(cell);
                 }
@@ -96,68 +94,67 @@ class App {
     }
 
     analyze() {
-        if (!this.timer) {
-            this.confidences = [];
-            this.lineChart.reset();
-            this.iteration = 0;
+        // if (!this.timer) {
+            // this.confidences = [];
+            // this.lineChart.reset();
+            // this.iteration = 0;
 
-            // this.ai = new MonteCarloTreeSearch(this.board);
-            // this.stop = false;
             this.start = new Date().getTime();
-            let ai = new MiniMaxAI(this.board, 3);
+            let ai = new MiniMaxAI(this.board);
             let move = ai.findMove();
             let time = (new Date().getTime() - this.start) / 1000;
             $('#time').text(this.format(time, 2));
+            $('#iterations').text(move.iterations);
             this.makeMove(move.move);
 
             // this.timer = d3.timer(this.onTimer.bind(this));
             // $('#analyze > i').attr('class', 'fa fa-stop');
-        } else {
-            this.stop = true;
-        }
+        // } else {
+        //     this.stop = true;
+        // }
     }
 
-    onTimer(elapsed) {
-        try {
-            let frameStart = new Date().getTime();
-            while (new Date().getTime() - frameStart < 50) { //20 fps
-                this.ai.step();
-                this.iteration++;
-            }
-            this.aiResult = this.ai.getResult();
-            let time = (new Date().getTime() - this.start) / 1000;
-            this.barChart.refresh(this.aiResult);
-            this.boardView.refresh();
-            this.lineChart.addDataPoint(this.aiResult.confidence);
+    // onTimer(elapsed) {
+    //     try {
+    //         let frameStart = new Date().getTime();
+    //         while (new Date().getTime() - frameStart < 50) { //20 fps
+    //             this.ai.step();
+    //             this.iteration++;
+    //         }
+    //         this.aiResult = this.ai.getResult();
+    //         let time = (new Date().getTime() - this.start) / 1000;
+    //         this.barChart.refresh(this.aiResult);
+    //         this.boardView.refresh();
+    //         this.lineChart.addDataPoint(this.aiResult.confidence);
+    //
+    //         $('#iterations').text(this.iteration);
+    //         $('#confidence').text(this.format(this.aiResult.confidence, 2));
+    //         $('#time').text(this.format(time, 2));
+    //
+    //         let settings = {iterations: 100};
+    //         if (this.stop
+    //             || (this.aiResult.moves.length === 1)
+    //             // || (settings.timeout > 0 && elapsed >= settings.timeout * 1000)
+    //             // || (settings.confidence > 0 && this.aiResult.confidence >= settings.confidence)
+    //             || (settings.iterations > 0 && this.iteration >= settings.iterations)) {
+    //             // console.log('it/sec', this.iteration / time);
+    //             let move = this.aiResult.moves[0].move as Move;
+    //             this.makeMove(move);
+    //             this.stopTimer();
+    //         }
+    //     } catch (e) {
+    //         console.error(e);
+    //         this.stopTimer();
+    //     }
+    // }
 
-            $('#iterations').text(this.iteration);
-            $('#confidence').text(this.format(this.aiResult.confidence, 2));
-            $('#time').text(this.format(time, 2));
-
-            let settings = {iterations: 100};
-            if (this.stop
-                || (this.aiResult.moves.length === 1)
-                // || (settings.timeout > 0 && elapsed >= settings.timeout * 1000)
-                // || (settings.confidence > 0 && this.aiResult.confidence >= settings.confidence)
-                || (settings.iterations > 0 && this.iteration >= settings.iterations)) {
-                // console.log('it/sec', this.iteration / time);
-                let move = this.aiResult.moves[0].move as Move;
-                this.makeMove(move);
-                this.stopTimer();
-            }
-        } catch (e) {
-            console.error(e);
-            this.stopTimer();
-        }
-    }
-
-    stopTimer() {
-        if (this.timer) {
-            this.timer.stop();
-            this.timer = undefined;
-            $('#analyze > i').attr('class', 'fa fa-play');
-        }
-    }
+    // stopTimer() {
+    //     if (this.timer) {
+    //         this.timer.stop();
+    //         this.timer = undefined;
+    //         $('#analyze > i').attr('class', 'fa fa-play');
+    //     }
+    // }
 
     format(value: number, digits: number) {
         return value.toFixed(digits);
@@ -178,14 +175,14 @@ class App {
     }
 
     restart() {
-        this.stopTimer();
+        // this.stopTimer();
         // let game = $('#game').val();
         this.board.init();
         this.refresh();
     }
 
     undo() {
-        this.stopTimer();
+        // this.stopTimer();
         this.board.undo();
         this.refresh();
     }
