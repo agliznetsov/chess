@@ -1,5 +1,5 @@
 {
-  "name": "monte-carlo-tree-search",
+  "name": "chess",
   "private": true,
   "version": "1.0.0",
   "dependencies": {
@@ -15,6 +15,9 @@
     "@types/lodash": "^4.14.52",
     "@types/mocha": "^2.2.39",
     "@types/node": "^7.0.5",
+    "babel-core": "^6.24.0",
+    "babel-loader": "^6.4.0",
+    "babel-preset-es2015": "^6.24.0",
     "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.26.1",
     "extract-text-webpack-plugin": "^2.0.0",
@@ -29,8 +32,8 @@
     "webpack-dev-server": "^2.4.1"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc -p . && webpack --bail --colors --progress",
-    "start": "tsc -p . && webpack-dev-server --bail --colors --progress --port 8000",
+    "build": "rm -rf dist && webpack --bail --colors --progress",
+    "start": "webpack-dev-server --bail --colors --progress --port 8000",
     "dist": "http-server -p 8000 -c-1 -o",
     "test": "mocha --colors --require ts-node/register test/**/*Test.ts"
   }

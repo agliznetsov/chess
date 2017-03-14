@@ -1,19 +1,28 @@
 var webpack = require('webpack');
+var path = require("path");
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
-    entry: './src/App.js',
-    output: {
-        filename: 'bundle.js',
-        path: __dirname + "/dist"
+    entry: {
+        bundle: './src/App.js',
+        ai: "./src/MiniMax.js"
     },
+    output: {
+        path: path.join(__dirname, "dist"),
+        filename: "[name].js"
+    },
+    // entry: './src/App.js',
+    // output: {
+    //     filename: 'bundle.js',
+    //     path: __dirname + "/dist"
+    // },
     module: {
         rules: [
             {
-                enforce: 'pre',
                 test: /\.js$/,
-                loader: "source-map-loader"
+                loader: 'babel-loader',
+                include: path.join(__dirname, 'src')
             },
             {
                 test: /\.css$/,
