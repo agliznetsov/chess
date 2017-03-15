@@ -84,4 +84,33 @@ describe('ConnectFourBoard', () => {
         assert.equal(board2.pieces.length, 3);
     });
 
+
+    // it('playout', () => {
+    //     for (let i = 0; i < 100; i++) {
+    //         randomPlayout();
+    //     }
+    // });
+    //
+    // function randomPlayout() {
+    //     let board = new Board();
+    //     board.player = Chess.White;
+    //     // board.add(new Piece(Chess.King, Chess.White, new Cell(7, 7)));
+    //     // board.add(new Piece(Chess.Rook, Chess.White, new Cell(6, 7)));
+    //     // board.add(new Piece(Chess.Rook, Chess.White, new Cell(5, 7)));
+    //     // board.add(new Piece(Chess.King, Chess.Black, new Cell(4, 4)));
+    //     board.init();
+    //     board.analyze();
+    //     let count = 0;
+    //     while (true) {
+    //         let moves = board.getMoves();
+    //         if (board.status || moves.length == 0) {
+    //             break;
+    //         }
+    //         let index = Math.floor(Math.random() * moves.length);
+    //         board.makeMove(moves[index]);
+    //         count++;
+    //     }
+    //     console.log('moves', count, 'status', board.status);
+    // }
+
 });

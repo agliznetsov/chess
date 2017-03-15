@@ -15,6 +15,8 @@ class App {
 
     constructor() {
         $('#restart').click(this.restart.bind(this));
+        $('#save').click(this.save.bind(this));
+        $('#load').click(this.load.bind(this));
         $('#undo').click(this.undo.bind(this));
         $('#analyze').click(this.analyze.bind(this));
         $('#board').click(this.onBoardClick.bind(this));
@@ -104,6 +106,22 @@ class App {
 
     restart() {
         this.board.init();
+        this.refresh();
+    }
+
+    save() {
+        window.localStorage.setItem("board", this.board.toString());
+    }
+
+    load() {
+        let str = window.localStorage.getItem("board");
+        if (str) {
+            this.board = Board.fromString(str);
+            this.boardView.board = this.board;
+        } else {
+            this.board.init();
+        }
+        this.board.analyze();
         this.refresh();
     }
 

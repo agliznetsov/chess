@@ -11,8 +11,8 @@ export class MiniMaxAI {
 
     findMove() {
         let start = new Date().getTime();
-        let move = this.miniMax(this.originalBoard, this.originalBoard.player, this.depth);
-        //let move = this.alphaBeta(this.originalBoard, this.originalBoard.player, this.depth, -Number.MAX_VALUE, Number.MAX_VALUE);
+        //let move = this.miniMax(this.originalBoard, this.originalBoard.player, this.depth);
+        let move = this.alphaBeta(this.originalBoard, this.originalBoard.player, this.depth, -Number.MAX_VALUE, Number.MAX_VALUE);
         let time = (new Date().getTime() - start) / 1000;
         move.iterations = this.counter;
         move.time = time;
@@ -25,9 +25,9 @@ export class MiniMaxAI {
         if (currentDepth == 0 || successors.length == 0) {
             this.counter++;
             let res = {value: board.evaluate()};
-            if (res.value > 1000) {
+            if (Math.abs(res.value) > 1000) {
                 //If we can win, increase the value of the moves that lead to a win in less moves
-                res.value += currentDepth;
+                res.value += Math.sign(res.value) * currentDepth;
             }
             return res;
         }
@@ -63,9 +63,9 @@ export class MiniMaxAI {
         if (currentDepth == 0 || successors.length == 0) {
             this.counter++;
             let res = {value: board.evaluate()};
-            if (res.value > 1000) {
+            if (Math.abs(res.value) > 1000) {
                 //If we can win, increase the value of the moves that lead to a win in less moves
-                res.value += currentDepth;
+                res.value += Math.sign(res.value) * currentDepth;
             }
             return res;
         }

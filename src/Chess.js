@@ -277,6 +277,10 @@ export class Board {
         this.initRow(1, Black, "11111111");
         this.initRow(6, White, "11111111");
         this.initRow(7, White, "42356324");
+        // this.add(new Piece(King, White, new Cell(7, 7)));
+        // this.add(new Piece(Rook, White, new Cell(6, 7)));
+        // this.add(new Piece(Rook, White, new Cell(5, 7)));
+        // this.add(new Piece(King, Black, new Cell(4, 4)));
         this.analyze();
     }
 

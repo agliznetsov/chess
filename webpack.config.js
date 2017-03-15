@@ -6,17 +6,13 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
 module.exports = {
     entry: {
         bundle: './src/App.js',
-        ai: "./src/MiniMax.js"
+        // ai: ["./src/MiniMax.js", "./src/Worker.js"]
+        ai: ["./src/MiniMax.js"]
     },
     output: {
         path: path.join(__dirname, "dist"),
         filename: "[name].js"
     },
-    // entry: './src/App.js',
-    // output: {
-    //     filename: 'bundle.js',
-    //     path: __dirname + "/dist"
-    // },
     module: {
         rules: [
             {
