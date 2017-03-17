@@ -5,6 +5,7 @@ $ = require("jquery");
 import * as Chess from './Chess';
 import {Board, Piece, Cell, Move} from './Chess';
 import {BoardView, CELL_SIZE} from './BoardView';
+// import {MiniMaxAI} from './MiniMax';
 
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "../node_modules/bootstrap/dist/js/bootstrap.js";

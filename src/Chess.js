@@ -266,6 +266,7 @@ export class Board {
         this.selection = new Array(SIZE * SIZE);
         this.history = [];
         this.player = White;
+        this.movesCounter = {};
     }
 
     init() {
@@ -277,10 +278,6 @@ export class Board {
         this.initRow(1, Black, "11111111");
         this.initRow(6, White, "11111111");
         this.initRow(7, White, "42356324");
-        // this.add(new Piece(King, White, new Cell(7, 7)));
-        // this.add(new Piece(Rook, White, new Cell(6, 7)));
-        // this.add(new Piece(Rook, White, new Cell(5, 7)));
-        // this.add(new Piece(King, Black, new Cell(4, 4)));
         this.analyze();
     }
 
@@ -436,6 +433,7 @@ export class Board {
                 moveCount += validMoves.length;
             }
         });
+        this.movesCounter[this.player] = moveCount;
         //4. if no moves or no pieces -> end game
         if (moveCount === 0) {
             return this.getKing(this.player).checked ? Checkmate : Stalemate;
@@ -446,22 +444,27 @@ export class Board {
 
     findMoves() {
         //TODO: castling
-        let count = 0;
+        this.moves = null;
+        this.movesCounter[White] = 0;
+        this.movesCounter[Black] = 0;
         this.kings.forEach(k => k.checked = false);
         this.pieces.forEach(p => {
             p.findMoves();
-            count += p.moves.length;
+            //TODO: use opponent moves to build attacked cells and restrict legal moves ?
+            this.movesCounter[p.player] += p.moves.length;
         });
     }
 
     getMoves() {
-        let moves = [];
-        this.pieces.forEach(p => {
-            if (p.player == this.player) {
-                p.moves.forEach(c => moves.push(new Move(p.cell, c)));
-            }
-        });
-        return moves;
+        if (!this.moves) {
+            this.moves = [];
+            this.pieces.forEach(p => {
+                if (p.player == this.player) {
+                    p.moves.forEach(c => this.moves.push(new Move(p.cell, c)));
+                }
+            });
+        }
+        return this.moves;
     }
 
     evaluate() {
@@ -471,7 +474,7 @@ export class Board {
             } else
                 return 0;
         } else {
-            let value = 0;
+            let value = 0; //0.05 * (this.movesCounter[White] - this.movesCounter[Black]);
             this.pieces.forEach(p => value += ((p.player == White) ? p.value() : -p.value()));
             return value;
         }
